@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { firestore } from '../firebase/firebase.utils';
-import { getDoc, getDocs, setDoc, updateDoc, deleteDoc, doc, collection } from 'firebase/firestore';
+import { getDoc, getDocs, setDoc, updateDoc, deleteDoc, doc, collection, DocumentReference } from 'firebase/firestore';
 import EmailValidator from 'email-validator';
 
 interface User {
@@ -13,16 +13,15 @@ interface User {
 };
 
 const addUser = async (req: Request, res: Response) => {
-    const { email, number, name, gender, language, avatarUrl } = req.body;
-    const user = { email, number, name, gender, language, avatarUrl };
+    const { email } = req.body;
     
     if (!EmailValidator.validate(email)) {
         return res.status(400).send('Invalid Email Address');
     }
 
     try {
-        const userDocRef = doc(firestore, 'users', email);
-        await setDoc(userDocRef, user);
+        const userDocRef = doc(firestore, 'users', email) as DocumentReference<User>;
+        await setDoc<User>(userDocRef, { ...req.body });
         res.status(200).send('User Created Successfully');
     }
     catch (e) {
